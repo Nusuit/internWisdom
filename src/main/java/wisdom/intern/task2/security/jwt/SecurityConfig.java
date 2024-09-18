@@ -1,4 +1,4 @@
-package wisdom.intern.task2.security;
+package wisdom.intern.task2.security.jwt;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
