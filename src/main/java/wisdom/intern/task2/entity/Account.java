@@ -20,7 +20,7 @@ public class Account {
 
     @Column(nullable = false, length = 20)
     private String username; // ánh xạ với VARCHAR(20)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 256)
     private String password; // ánh xạ với VARCHAR(256)
     @Column(nullable = false, length = 20)
     private String role; // ánh xạ với VARCHAR(20)

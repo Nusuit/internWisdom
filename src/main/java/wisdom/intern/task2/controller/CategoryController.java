@@ -1,9 +1,10 @@
 package wisdom.intern.task2.controller;
 
-import com.wisdom.task1.dto.CategoryDto;
-import com.wisdom.task1.dto.ProductDto;
-import com.wisdom.task1.service.CategoryService;
-import com.wisdom.task1.service.ProductService;
+import org.springframework.security.access.prepost.PreAuthorize;
+import wisdom.intern.task2.dto.CategoryDto;
+import wisdom.intern.task2.dto.ProductDto;
+import wisdom.intern.task2.service.CategoryService;
+import wisdom.intern.task2.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,8 @@ public class CategoryController {
     private ProductService productService;
 
     // Build Add Category REST API
+    // Chỉ cho phép role ADMIN tạo category
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<CategoryDto> createCategory(@RequestBody CategoryDto categoryDto) {
         CategoryDto saveCategory = categoryService.createCategory(categoryDto);

@@ -6,39 +6,39 @@ import org.springframework.security.core.userdetails.UserDetails;
 import wisdom.intern.task2.entity.Account;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Collections;
 
 public class UserPrinciple implements UserDetails {
     private static final long serialVersionUID = 1L;
-    private Long id;
+    private Integer id;
+    private String username;
     private String password;
-    private String email;
-    private String fullname;
-    private Collection<? extends GrantedAuthority> roles;
-    public UserPrinciple(Long id, String password, String username, String name, Collection<? extends GrantedAuthority> authorities) {
+    private Collection<? extends GrantedAuthority> authorities;
+
+    public UserPrinciple(Integer id, String username, String password, Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
+        this.username = username;
         this.password = password;
-        this.email = username;
-        this.fullname = name;
-        this.roles = authorities;
+        this.authorities = authorities;
     }
 
-    public static UserPrinciple build(Account user){
-        List<GrantedAuthority> authorities = user.getRole().stream().map(role ->
-                new SimpleGrantedAuthority(role.getCode())).collect(Collectors.toList());
-        return new UserPrinciple(user.getId(),user.getPassword(),user.getEmail(), user.getFullname(), authorities);
+    public static UserPrinciple build(Account user) {
+        GrantedAuthority authority = new SimpleGrantedAuthority(user.getRole());
+        return new UserPrinciple(
+                user.getId(),
+                user.getUsername(),
+                user.getPassword(),
+                Collections.singletonList(authority)
+        );
     }
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
-    public String getFullname(){
-        return fullname;
-    }
+
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return roles;
+    public String getUsername() {
+        return username;
     }
 
     @Override
@@ -47,8 +47,8 @@ public class UserPrinciple implements UserDetails {
     }
 
     @Override
-    public String getUsername() {
-        return email;
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return authorities;
     }
 
     @Override
