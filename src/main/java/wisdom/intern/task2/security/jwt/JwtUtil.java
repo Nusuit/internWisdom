@@ -27,12 +27,13 @@ public class JwtUtil {
     }
 
     // Tạo JWT token
-    public String generateToken(String username) {
+    public String generateToken(String username, String role) {
         return Jwts.builder()
-                .setSubject(username)  // Thiết lập đối tượng (username)
-                .setIssuedAt(new Date())  // Thiết lập thời gian tạo token
-                .setExpiration(new Date(System.currentTimeMillis() + expiration))  // Thời gian hết hạn của token
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)  // Ký với thuật toán HMAC-SHA256 và secret key
+                .setSubject(username)
+                .claim("role", role.toUpperCase()) // Thêm claim role vào token
+                .setIssuedAt(new Date())  // Thời gian tạo token
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))  // Thiết lập thời gian hết hạn
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)  // Sử dụng SecretKey từ hàm getSigningKey()
                 .compact();
     }
 

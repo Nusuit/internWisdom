@@ -1,80 +1,81 @@
 package wisdom.intern.task2.service.impl;
 
-import wisdom.intern.task2.dto.ProductDto;
-import wisdom.intern.task2.entity.Category;
+import lombok.NoArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import wisdom.intern.task2.entity.Product;
+import wisdom.intern.task2.entity.Category;
 import wisdom.intern.task2.exception.ResourceNotFoundException;
-import wisdom.intern.task2.mapper.ProductMapper;
 import wisdom.intern.task2.repository.ProductRepository;
 import wisdom.intern.task2.repository.CategoryRepository;
 import wisdom.intern.task2.service.ProductService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import wisdom.intern.task2.mapper.common.PageMapper;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
+@NoArgsConstructor
 
 public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductRepository productRepository;
     @Autowired
     private CategoryRepository categoryRepository;
+    @Autowired
+    private PageMapper pageMapper;
+
+    // Gộp tạo và cập nhật Product
     @Override
-    public ProductDto createProduct(ProductDto productDto) {
-        // Tìm Category từ categoryId
-        Category category = categoryRepository.findById(productDto.getCategory_Id())
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + productDto.getCategory_Id()));
+    public Product saveOrUpdateProduct(Integer productId, Product product) {
+        if (productId != null) {
+            // Cập nhật sản phẩm
+            Product existingProduct = productRepository.findById(productId).orElseThrow(
+                    () -> new ResourceNotFoundException("Product with id " + productId + " not found")
+            );
+            existingProduct.setName(product.getName());
+            existingProduct.setPrice(product.getPrice());
+            existingProduct.setDescription(product.getDescription());
 
-        // Tạo đối tượng Product từ ProductDto
-        Product product = ProductMapper.maptoProduct(productDto);
-        // Gán Category vào Product
-        product.setCategory(category);
+            // Tìm category theo category_Id trong Product
+            Category category = categoryRepository.findById(product.getCategory().getCategoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Category with id " + product.getCategory().getCategoryId() + " not found"));
 
-        // Lưu Product vào database
-        Product savedProduct = productRepository.save(product);
-        return ProductMapper.maptoProductDto(savedProduct);
+            // Gán category tìm được cho product
+            existingProduct.setCategory(category);
+
+            return productRepository.save(existingProduct);
+        } else {
+            // Tạo mới sản phẩm
+            Category category = categoryRepository.findById(product.getCategory().getCategoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + product.getCategory().getCategoryId()));
+
+            // Gán Category vào Product
+            product.setCategory(category);
+
+            // Lưu Product vào database
+            return productRepository.save(product);
+        }
     }
 
 
     @Override
-    public ProductDto getProductById(Integer productId) {
-        Product product = productRepository.findById(productId)
+    public Product getProductById(Integer productId) {
+        return productRepository.findById(productId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Product with id " + productId + " not found"));
-        return ProductMapper.maptoProductDto(product);
     }
 
     @Override
-    public List<ProductDto> getAllProducts() {
-        List<Product> products = productRepository.findAll();
-        return products.stream().map(ProductMapper::maptoProductDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public ProductDto updateProduct(Integer productId, ProductDto updatedProductDto) {
-        Product product = productRepository.findById(productId).orElseThrow(
-                () -> new ResourceNotFoundException("Product with id " + productId + " not found"));
-        product.setName(updatedProductDto.getName());
-        product.setPrice(updatedProductDto.getPrice());
-        product.setDescription(updatedProductDto.getDescription());
-
-        // Tìm category theo category_Id trong ProductDto
-        Category category = categoryRepository.findById(updatedProductDto.getCategory_Id())
-                .orElseThrow(() -> new ResourceNotFoundException("Category with id " + updatedProductDto.getCategory_Id() + " not found"));
-
-        // Gán category tìm được cho product
-        product.setCategory(category);
-
-        Product updatedProductObj = productRepository.save(product);
-        return ProductMapper.maptoProductDto(updatedProductObj);
+    public List<Product> getAllProducts(Integer pageNo, Integer pageSize, String sortBy, String sortType) {
+        Sort.Direction direction = sortType.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(direction, sortBy));
+        return productRepository.findAll(pageable).getContent();
     }
 
     @Override
@@ -83,36 +84,28 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductDto> getProductByCategory(Integer categoryId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+    public List<Product> getProductByCategory(Integer categoryId, int page, int size) {
+        Pageable pageable = pageMapper.customPage(page, size, "name", "asc");
         Page<Product> productsPage = productRepository.findByCategory_CategoryId(categoryId, pageable);
-
-        return productsPage.stream()
-                .map(ProductMapper::maptoProductDto)
-                .collect(Collectors.toList());
+        return productsPage.getContent();
     }
 
 
     @Override
-    public ProductDto addProductToCategory(Integer categoryId, ProductDto productDto) {
+    public Product addProductToCategory(Integer categoryId, Product product) {
         // Find category by ID
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + categoryId));
 
-        // Map ProductDto to Product entity
-        Product product = ProductMapper.maptoProduct(productDto);
         // Set the category for the product
         product.setCategory(category);
 
         // Save the product in the database
-        Product savedProduct = productRepository.save(product);
-
-        // Map the saved product back to ProductDto
-        return ProductMapper.maptoProductDto(savedProduct);
+        return productRepository.save(product);
     }
 
     @Override
-    public ProductDto updateProductCategory(Integer productId, Integer categoryId) {
+    public Product updateProductCategory(Integer productId, Integer categoryId) {
         // Find the product by ID
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
@@ -125,19 +118,13 @@ public class ProductServiceImpl implements ProductService {
         product.setCategory(category);
 
         // Save the updated product
-        Product updatedProduct = productRepository.save(product);
-
-        // Return the updated product as a DTO
-        return ProductMapper.maptoProductDto(updatedProduct);
+        return productRepository.save(product);
     }
 
     @Override
-    public List<ProductDto> getProductByPage(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+    public List<Product> getProductByPage(int page, int size) {
+        Pageable pageable = pageMapper.customPage(page, size, "name", "asc");
         Page<Product> productsPage = productRepository.findAll(pageable);
-
-        return productsPage.stream()
-                .map(ProductMapper::maptoProductDto)
-                .collect(Collectors.toList());
+        return productsPage.getContent();
     }
 }

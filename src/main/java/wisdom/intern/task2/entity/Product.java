@@ -30,5 +30,4 @@ public class Product {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_Id",referencedColumnName = "categoryId", nullable = false)
     private wisdom.intern.task2.entity.Category category;
-
 }

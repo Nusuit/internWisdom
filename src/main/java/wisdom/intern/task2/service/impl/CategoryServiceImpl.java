@@ -1,8 +1,10 @@
 package wisdom.intern.task2.service.impl;
-import wisdom.intern.task2.dto.CategoryDto;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import wisdom.intern.task2.entity.Category;
 import wisdom.intern.task2.exception.ResourceNotFoundException;
-import wisdom.intern.task2.mapper.CategoryMapper;
 import wisdom.intern.task2.repository.CategoryRepository;
 import wisdom.intern.task2.service.CategoryService;
 import lombok.AllArgsConstructor;
@@ -10,45 +12,44 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
 
 public class CategoryServiceImpl implements CategoryService {
+    @Autowired
     private CategoryRepository categoryRepository;
+    // Gộp tạo và cập nhật Category
     @Override
-    public CategoryDto createCategory(CategoryDto categoryDto) {
-        Category category = CategoryMapper.maptoCategory(categoryDto);
-        Category savedCategory = categoryRepository.save(category);
-        return CategoryMapper.maptoCategoryDto(savedCategory);
+    public Category saveOrUpdateCategory(Integer categoryId, Category category) {
+        if (categoryId != null) {
+            Category existingCategory = categoryRepository.findById(categoryId).orElseThrow(
+                    () -> new ResourceNotFoundException("Category is not exist with id: " + categoryId)
+            );
+            existingCategory.setName(category.getName());
+            existingCategory.setDescription(category.getDescription());
+
+            // Cập nhật Category
+            return categoryRepository.save(existingCategory);
+        } else {
+            // Tạo mới Category
+            return categoryRepository.save(category);
+        }
     }
 
     @Override
-    public CategoryDto getCategoryById(Integer categoryId) {
-        Category category = categoryRepository.findById(categoryId)
+    public Category getCategoryById(Integer categoryId) {
+        return categoryRepository.findById(categoryId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Category is not exist with id: " + categoryId));
-        return CategoryMapper.maptoCategoryDto(category);
+
     }
 
     @Override
-    public List<CategoryDto> getAllCategories() {
-        List<Category> categories = categoryRepository.findAll();
-        return categories.stream().map(CategoryMapper::maptoCategoryDto)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public CategoryDto updateCategory(Integer categoryId, CategoryDto updatedCategory) {
-        Category category = categoryRepository.findById(categoryId).orElseThrow(
-                () -> new ResourceNotFoundException("Category is not exist with id: " + categoryId)
-        );
-        category.setName(updatedCategory.getName());
-        category.setDescription(updatedCategory.getDescription());
-
-        Category updatedCategoryObj = categoryRepository.save(category);
-        return CategoryMapper.maptoCategoryDto(updatedCategoryObj);
+    public List<Category> getAllCategories(Integer pageNo, Integer pageSize, String sortBy, String sortType) {
+        Sort.Direction direction = sortType.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(direction, sortBy));
+        return categoryRepository.findAll(pageable).getContent();
     }
 
     @Override

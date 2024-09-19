@@ -1,17 +1,17 @@
 package wisdom.intern.task2.service;
 
-import wisdom.intern.task2.dto.ProductDto;
+import wisdom.intern.task2.entity.Product;
 
 import java.util.List;
 
 public interface ProductService {
-    ProductDto createProduct(ProductDto productDto);
-    ProductDto getProductById(Integer ProductId);
-    List<ProductDto> getAllProducts();
-    ProductDto updateProduct(Integer ProductId, ProductDto updatedProductDto);
+    // Gộp tạo và cập nhật Product
+    Product saveOrUpdateProduct(Integer productId, Product product);
+    Product getProductById(Integer ProductId);
+    List<Product> getAllProducts(Integer pageNo, Integer pageSize, String sortBy, String sortType);
     void deleteProduct(Integer ProductId);
-    List<ProductDto> getProductByCategory(Integer categoryId, int page, int size);
-    ProductDto addProductToCategory(Integer categoryId, ProductDto productDto);
-    ProductDto updateProductCategory(Integer productId, Integer categoryId);
-    List<ProductDto> getProductByPage(int page, int size);
+    List<Product> getProductByCategory(Integer categoryId, int page, int size);
+    Product addProductToCategory(Integer categoryId, Product product);
+    Product updateProductCategory(Integer productId, Integer categoryId);
+    List<Product> getProductByPage(int page, int size);
 }

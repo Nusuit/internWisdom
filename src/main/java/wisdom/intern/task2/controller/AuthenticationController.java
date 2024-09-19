@@ -35,9 +35,17 @@ public class AuthenticationController {
             throw new Exception("Incorrect username or password", e);
         }
 
-        // Nếu xác thực thành công, tạo JWT và trả về
+        // Lấy thông tin người dùng sau khi xác thực thành công
         final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getUsername());
-        final String jwt = jwtUtil.generateToken(userDetails.getUsername());
+
+        // Lấy vai trò của người dùng từ danh sách authorities
+        String role = userDetails.getAuthorities().stream()
+                .findFirst()  // Lấy vai trò đầu tiên
+                .map(grantedAuthority -> grantedAuthority.getAuthority())  // Lấy tên quyền (vai trò)
+                .orElse("USER");  // Nếu không có quyền, mặc định là USER
+
+        // Tạo JWT với username và vai trò
+        final String jwt = jwtUtil.generateToken(userDetails.getUsername(), role);
 
         return ResponseEntity.ok(new AuthenticationResponse(jwt));
     }
