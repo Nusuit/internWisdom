@@ -1,7 +1,9 @@
 package wisdom.intern.task2.controller;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import wisdom.intern.task2.entity.Category;
+import wisdom.intern.task2.mapper.common.PageMapper;
 import wisdom.intern.task2.service.CategoryService;
 import wisdom.intern.task2.service.ProductService;
 import wisdom.intern.task2.entity.Product;
@@ -19,6 +21,8 @@ public class CategoryController {
     @Autowired
     private CategoryService categoryService;
     private ProductService productService;
+    @Autowired
+    private PageMapper pageMapper;
 
     // Build Add Category REST API
     // Chỉ cho phép role ADMIN tạo category
@@ -32,6 +36,7 @@ public class CategoryController {
     }
 
     // Build Get Category REST API
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
     @GetMapping("getbyID")
     public ResponseEntity<Category> getAllCategoryById(@RequestParam("id") Integer categoryId) {
         Category category = categoryService.getCategoryById(categoryId);
@@ -39,25 +44,31 @@ public class CategoryController {
     }
 
     // Build get all Categories REST API
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
     @GetMapping
-    public ResponseEntity<List<Category>> getAllCategory(
+    public ResponseEntity<List<Category>> getAllCategories(
             @RequestParam(defaultValue = "0") Integer pageNo,
             @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "desc", required = false) String sortType) {
 
-        List<Category> categories = categoryService.getAllCategories(pageNo, pageSize, sortBy, sortType);
+        // Tạo Pageable thông qua PageMapper
+        Pageable pageable = pageMapper.customPage(pageNo, pageSize, sortBy, sortType);
+
+        List<Category> categories = categoryService.getAllCategories(pageable);
         return ResponseEntity.ok(categories);
     }
 
     // Build Delete Category REST API
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("delete")
-    public ResponseEntity<String> deleteEmployee(@RequestParam("id") Integer categoryId) {
+    public ResponseEntity<String> deleteCategory(@RequestParam("id") Integer categoryId) {
         categoryService.deleteCategory(categoryId);
         return ResponseEntity.ok("Category deleted");
     }
 
     // Build Get All Products By Category With Pagination
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
     @GetMapping("categoryId/products")
     public ResponseEntity<List<Product>> getProductByCategory(@RequestParam("categoryId") Integer categoryId,
                                                               @RequestParam(defaultValue = "0") int page,
@@ -68,6 +79,7 @@ public class CategoryController {
 
 
     // Build Add A Product To A Specific Category
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
     @PostMapping("categoryId/products")
     public ResponseEntity<Product> addProductToCategory(@RequestParam("categoryId") Integer categoryId,
                                                         @RequestBody Product product) {

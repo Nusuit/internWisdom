@@ -29,6 +29,7 @@ public class ProductController {
     }
 
     // Build Get Product REST API
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
     @GetMapping("getById")
     public ResponseEntity<Product> getAllProductById(@RequestParam("id") Integer productId) {
         Product product = productService.getProductById(productId);
@@ -36,6 +37,7 @@ public class ProductController {
     }
 
     // Build Get All Products REST API
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
     @GetMapping
     public ResponseEntity<List<Product>> getAllProduct(
             @RequestParam(defaultValue = "0") Integer pageNo,
@@ -48,13 +50,15 @@ public class ProductController {
     }
 
     // Build Delete Product REST API
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("delete")
-    public ResponseEntity<String> deleteEmployee(@RequestParam("id") Integer productId) {
+    public ResponseEntity<String> deleteProduct(@RequestParam("id") Integer productId) {
         productService.deleteProduct(productId);
         return ResponseEntity.ok("Product deleted");
     }
 
     // Build Update The Category Of A Product
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("category")
     public ResponseEntity<Product> updateProductCategory(@RequestParam("productId") Integer productId,
                                                          @RequestParam("categoryId") Integer categoryId) {
@@ -63,6 +67,7 @@ public class ProductController {
     }
 
     // Build Get A Paginated List Of Products
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
     @GetMapping("paged")
     public ResponseEntity<List<Product>> getProductByPage(@RequestParam(defaultValue = "0") int page,
                                                           @RequestParam(defaultValue = "3") int size) {

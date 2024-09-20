@@ -19,6 +19,7 @@ import java.util.List;
 public class CategoryServiceImpl implements CategoryService {
     @Autowired
     private CategoryRepository categoryRepository;
+
     // Gộp tạo và cập nhật Category
     @Override
     public Category saveOrUpdateCategory(Integer categoryId, Category category) {
@@ -46,9 +47,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<Category> getAllCategories(Integer pageNo, Integer pageSize, String sortBy, String sortType) {
-        Sort.Direction direction = sortType.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(direction, sortBy));
+    public List<Category> getAllCategories(Pageable pageable) {
         return categoryRepository.findAll(pageable).getContent();
     }
 
