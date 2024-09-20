@@ -1,8 +1,6 @@
 package wisdom.intern.task2.service.impl;
 
 import lombok.NoArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import wisdom.intern.task2.entity.Product;
 import wisdom.intern.task2.entity.Category;
 import wisdom.intern.task2.exception.ResourceNotFoundException;
@@ -33,11 +31,15 @@ public class ProductServiceImpl implements ProductService {
     // Gộp tạo và cập nhật Product
     @Override
     public Product saveOrUpdateProduct(Integer productId, Product product) {
+        if (product.getCategory() == null) {
+            throw new IllegalArgumentException("Category cannot be null.");
+        }
+
         if (productId != null) {
             // Cập nhật sản phẩm
-            Product existingProduct = productRepository.findById(productId).orElseThrow(
-                    () -> new ResourceNotFoundException("Product with id " + productId + " not found")
-            );
+            Product existingProduct = productRepository.findById(productId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Product with id " + productId + " not found"));
+
             existingProduct.setName(product.getName());
             existingProduct.setPrice(product.getPrice());
             existingProduct.setDescription(product.getDescription());
@@ -64,6 +66,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
 
+
     @Override
     public Product getProductById(Integer productId) {
         return productRepository.findById(productId)
@@ -72,9 +75,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> getAllProducts(Integer pageNo, Integer pageSize, String sortBy, String sortType) {
-        Sort.Direction direction = sortType.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by(direction, sortBy));
+    public List<Product> getAllProducts(Pageable pageable) {
         return productRepository.findAll(pageable).getContent();
     }
 

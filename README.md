@@ -20,3 +20,7 @@ Perform Other Actions (ADMIN Authentication Required):
 Most of the API actions (GET, UPDATE, DELETE) require ADMIN authentication. Make sure to include the JWT token in the request headers for these operations.
 
 ![image](https://github.com/user-attachments/assets/9c3b21be-dad2-4777-968d-5f7267bf54bf)
+
+![img.png](img.png)
+
+![img_1.png](img_1.png)

@@ -1,7 +1,10 @@
 package wisdom.intern.task2.controller;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
+import wisdom.intern.task2.entity.Category;
 import wisdom.intern.task2.entity.Product;
+import wisdom.intern.task2.mapper.common.PageMapper;
 import wisdom.intern.task2.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,6 +19,8 @@ import java.util.List;
 public class ProductController {
     @Autowired
     private ProductService productService;
+    @Autowired
+    private PageMapper pageMapper;
 
     // Build Add Product REST API
     // Chỉ cho phép role ADMIN tạo product
@@ -45,7 +50,10 @@ public class ProductController {
             @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(defaultValue = "desc", required = false) String sortType) {
 
-        List<Product> products = productService.getAllProducts(pageNo, pageSize, sortBy, sortType);
+        // Tạo Pageable thông qua PageMapper
+        Pageable pageable = pageMapper.customPage(pageNo, pageSize, sortBy, sortType);
+
+        List<Product> products = productService.getAllProducts(pageable);
         return ResponseEntity.ok(products);
     }
 
