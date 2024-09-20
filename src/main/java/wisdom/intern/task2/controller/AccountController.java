@@ -32,9 +32,6 @@ public class AccountController {
         // Nếu là cập nhật hoặc tạo tài khoản mới
         // Kiểm tra nếu role là ADMIN thì yêu cầu phải có quyền ADMIN
         if (account.getRole().equals("ADMIN")) {
-            // Sử dụng getUserIdByToken từ MapperImpl để lấy userId hiện tại
-            Integer currentUserId = mapper.getUserIdByToken();
-
             // Kiểm tra quyền ADMIN
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             boolean isAdmin = authentication.getAuthorities().stream()
@@ -44,13 +41,14 @@ public class AccountController {
                 throw new AccessDeniedException("Bạn không có quyền tạo tài khoản admin.");
             }
         }
+
         // Gọi service để lưu hoặc cập nhật tài khoản
         return ResponseEntity.ok(accountService.saveOrUpdateAccount(id, account));
     }
 
 
     // Cho phép USER hoặc ADMIN xem danh sách tài khoản
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
     @GetMapping
     public ResponseEntity<List<AccountInfoDto>> getAllAccounts(
             @RequestParam(defaultValue = "0") Integer pageNo,
@@ -63,15 +61,15 @@ public class AccountController {
     }
 
     // Cho phép USER hoặc ADMIN lấy thông tin tài khoản theo ID
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN')")
+    @GetMapping("byId")
     public ResponseEntity<AccountInfoDto> getAccountById(@RequestParam Long id) {
         return ResponseEntity.ok(accountService.getAccountById(id));
     }
 
     // Chỉ cho phép ADMIN xóa tài khoản
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/{id}")
+    @DeleteMapping("delete")
     public ResponseEntity<Void> deleteAccount(@RequestParam Long id) {
         accountService.deleteAccount(id);
         return ResponseEntity.noContent().build();

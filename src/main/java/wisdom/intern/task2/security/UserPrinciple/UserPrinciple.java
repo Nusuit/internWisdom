@@ -23,7 +23,8 @@ public class UserPrinciple implements UserDetails {
     }
 
     public static UserPrinciple build(Account user) {
-        GrantedAuthority authority = new SimpleGrantedAuthority(user.getRole());
+        // Thêm tiền tố ROLE_ cho vai trò của người dùng
+        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + user.getRole().toUpperCase());
         return new UserPrinciple(
                 user.getId(),
                 user.getUsername(),
@@ -31,6 +32,7 @@ public class UserPrinciple implements UserDetails {
                 Collections.singletonList(authority)
         );
     }
+
 
     public Integer getId() {
         return id;

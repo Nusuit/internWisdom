@@ -29,7 +29,7 @@ public class ProductController {
     }
 
     // Build Get Product REST API
-    @GetMapping("{id}")
+    @GetMapping("getById")
     public ResponseEntity<Product> getAllProductById(@RequestParam("id") Integer productId) {
         Product product = productService.getProductById(productId);
         return ResponseEntity.ok(product);
@@ -48,14 +48,14 @@ public class ProductController {
     }
 
     // Build Delete Product REST API
-    @DeleteMapping("{id}")
+    @DeleteMapping("delete")
     public ResponseEntity<String> deleteEmployee(@RequestParam("id") Integer productId) {
         productService.deleteProduct(productId);
         return ResponseEntity.ok("Product deleted");
     }
 
     // Build Update The Category Of A Product
-    @PatchMapping("/{productId}/category/{categoryId}")
+    @PatchMapping("category")
     public ResponseEntity<Product> updateProductCategory(@RequestParam("productId") Integer productId,
                                                          @RequestParam("categoryId") Integer categoryId) {
         Product updatedProduct = productService.updateProductCategory(productId, categoryId);
@@ -63,7 +63,7 @@ public class ProductController {
     }
 
     // Build Get A Paginated List Of Products
-    @GetMapping("/paged")
+    @GetMapping("paged")
     public ResponseEntity<List<Product>> getProductByPage(@RequestParam(defaultValue = "0") int page,
                                                           @RequestParam(defaultValue = "3") int size) {
         List<Product> products = productService.getProductByPage(page, size);

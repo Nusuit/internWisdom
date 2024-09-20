@@ -33,10 +33,10 @@ public class JwtProvider {
     public String getUsernameFromToken(String token) {
         SecretKey key = Keys.hmacShaKeyFor(secret.getBytes());
         Claims claims = Jwts.parser()
-                .verifyWith(key)
+                .setSigningKey(key)
                 .build()
-                .parseSignedClaims(token)
-                .getPayload();
+                .parseClaimsJws(token)
+                .getBody();
         return claims.getSubject();
     }
 

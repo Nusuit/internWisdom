@@ -32,7 +32,7 @@ public class CategoryController {
     }
 
     // Build Get Category REST API
-    @GetMapping("{id}")
+    @GetMapping("getbyID")
     public ResponseEntity<Category> getAllCategoryById(@RequestParam("id") Integer categoryId) {
         Category category = categoryService.getCategoryById(categoryId);
         return ResponseEntity.ok(category);
@@ -51,14 +51,14 @@ public class CategoryController {
     }
 
     // Build Delete Category REST API
-    @DeleteMapping("{id}")
+    @DeleteMapping("delete")
     public ResponseEntity<String> deleteEmployee(@RequestParam("id") Integer categoryId) {
         categoryService.deleteCategory(categoryId);
         return ResponseEntity.ok("Category deleted");
     }
 
     // Build Get All Products By Category With Pagination
-    @GetMapping("{categoryId}/products")
+    @GetMapping("categoryId/products")
     public ResponseEntity<List<Product>> getProductByCategory(@RequestParam("categoryId") Integer categoryId,
                                                               @RequestParam(defaultValue = "0") int page,
                                                               @RequestParam(defaultValue = "10") int size) {
@@ -68,7 +68,7 @@ public class CategoryController {
 
 
     // Build Add A Product To A Specific Category
-    @PostMapping("/{categoryId}/products")
+    @PostMapping("categoryId/products")
     public ResponseEntity<Product> addProductToCategory(@RequestParam("categoryId") Integer categoryId,
                                                         @RequestBody Product product) {
         Product createdProduct = productService.addProductToCategory(categoryId, product);
